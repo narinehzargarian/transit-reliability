@@ -6,7 +6,7 @@ Most transit agencies publish live vehicle positions but not how often their ser
 
 - on-time, early, and late rates, overall and per route
 - which hours of the day are worst
-- the stops where vehicles run latest
+- the stops with the lowest on-time rate
 - bunching: vehicles arriving close together instead of evenly spaced
 
 Output is a Parquet table of every inferred stop arrival, a `summary.json`, and a self-contained HTML report.
@@ -45,6 +45,20 @@ transit-reliability collect https://example.com/vehicle-positions --header "x-ap
 ```
 
 The longer you collect, the more useful the numbers. An hour gives a rough picture; a few weekdays gives per-hour and per-stop results you can trust.
+
+## Example: 48 minutes of Boston MBTA
+
+A short run on a Sunday night, 10:37 to 11:25 pm Eastern, polling every 20 seconds:
+
+| | |
+|---|---|
+| Positions saved | 31,833 from 260 vehicles, 0 failed polls |
+| Stop arrivals inferred | 7,712 across 453 trips and 90 routes |
+| On time / late / early | 67.1% / 18.7% / 14.3% |
+| Median delay | 1.5 min late (90th percentile 7.5 min) |
+| Arrival uncertainty | about +/-11 s (half the poll gap) |
+
+Route 66 was late at 62.6% of its stops (median 6.9 min). The Orange Line was on time 82.0% of the time. 10.4% of route 109's arrivals were bunched. One bus on route 134 ran 5 to 7 minutes early for 28 stops in a row, which is why a short window says little about a single route. Collect for several days before comparing routes.
 
 ## Commands
 
