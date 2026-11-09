@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Unit and Spark tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  aws-path:
+    name: Kinesis, S3, and DynamoDB on LocalStack
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:4.4
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: s3,kinesis,dynamodb,sts,iam
+    env:
+      LOCALSTACK: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Wait for LocalStack
+        run: |
+          for i in $(seq 1 60); do
+            curl -s localhost:4566/_localstack/health | grep -q '"kinesis": "\(available\|running\)"' && exit 0
+            sleep 2
+          done
+          exit 1
+      - run: pytest -q tests/integration
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+spark-warehouse/
+metastore_db/
+derby.log
+results/
+raw/
+report.html
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+.DS_Store

@@ -1,0 +1,8 @@
+# Local S3, Kinesis, DynamoDB, STS, and IAM on port 4566.
+services:
+  localstack:
+    image: localstack/localstack:4.4
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,kinesis,dynamodb,sts,iam
